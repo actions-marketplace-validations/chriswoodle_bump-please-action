@@ -1,0 +1,17 @@
+# Yarn
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+.pnp.*
+
+# API keys and secrets
+.env
+
+# Build output
+*.tsbuildinfo
+
+# Npm Pack
+*.tgz
+
