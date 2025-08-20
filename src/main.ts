@@ -16,8 +16,8 @@ export async function run(): Promise<void> {
             ...(core.getInput("disable-git-writes") ? { disableGitWrites: parseBooleanInput(core.getInput("disable-git-writes")) } : {}),
             ...(core.getInput("github-token") ? { githubToken: core.getInput("github-token") } : {}),
             ...(core.getInput("git-branch") ? { gitBranch: core.getInput("git-branch") } : {}),
-            ...(core.getInput("git-committer-name") ? { gitCommitterName: core.getInput("git-committer-name") } : {}),
-            ...(core.getInput("git-committer-email") ? { gitCommitterEmail: core.getInput("git-committer-email") } : {}),
+            gitCommitterName: core.getInput("git-committer-name") || "github-actions[bot]",
+            gitCommitterEmail: core.getInput("git-committer-email") || "github-actions[bot]@users.noreply.github.com",
             ...(core.getInput("root-package-json") ? { rootPackageJson: core.getInput("root-package-json") } : {}),
         }
 

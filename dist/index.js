@@ -42752,8 +42752,8 @@ async function run() {
             ...(coreExports.getInput("disable-git-writes") ? { disableGitWrites: parseBooleanInput(coreExports.getInput("disable-git-writes")) } : {}),
             ...(coreExports.getInput("github-token") ? { githubToken: coreExports.getInput("github-token") } : {}),
             ...(coreExports.getInput("git-branch") ? { gitBranch: coreExports.getInput("git-branch") } : {}),
-            ...(coreExports.getInput("git-committer-name") ? { gitCommitterName: coreExports.getInput("git-committer-name") } : {}),
-            ...(coreExports.getInput("git-committer-email") ? { gitCommitterEmail: coreExports.getInput("git-committer-email") } : {}),
+            gitCommitterName: coreExports.getInput("git-committer-name") || "github-actions[bot]",
+            gitCommitterEmail: coreExports.getInput("git-committer-email") || "github-actions[bot]@users.noreply.github.com",
             ...(coreExports.getInput("root-package-json") ? { rootPackageJson: coreExports.getInput("root-package-json") } : {}),
         };
         const result = await distExports.bump(flags);
