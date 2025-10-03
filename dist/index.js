@@ -42543,7 +42543,6 @@ function requireDist () {
 	const exec = node_util_1.default.promisify(childProcess.exec);
 	const zod_1 = /*@__PURE__*/ requireZod();
 	const envalid_1 = /*@__PURE__*/ requireDist$1();
-	const GIT_EMPTY_TREE_HASH = '4b825dc642cb6eb9a060e54bf8d69288fbee4904';
 	const DEFAULT_CONFIG_FILE = "bump-please-config.json";
 	const BumpPleaseConfig = zod_1.z.object({
 	    dryRun: zod_1.z.boolean().optional(),
@@ -42557,7 +42556,7 @@ function requireDist () {
 	    })).optional(),
 	});
 	async function bump(flags) {
-	    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y;
+	    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w;
 	    const env = (0, envalid_1.cleanEnv)(process.env, {
 	        DRY_RUN: (0, envalid_1.bool)({ desc: "Dry run", default: undefined }),
 	        CONFIG_FILE: (0, envalid_1.str)({ desc: "Path to the config file to use", default: undefined }),
@@ -42646,7 +42645,7 @@ function requireDist () {
 	        }
 	        if (!lastTag) {
 	            console.log('No last tag - using root package.json version');
-	            return rootPkgJson.version || '1.0.0';
+	            lastTag = rootPkgJson.version || '0.0.0';
 	        }
 	        const [, c1, c2, c3] = semanticTagPattern.exec(lastTag);
 	        if (releaseType === 'major') {
@@ -42660,9 +42659,8 @@ function requireDist () {
 	        }
 	    })(lastTag, nextReleaseType);
 	    console.log('nextVersion=', nextVersion);
-	    const oldestCommitHash = (_k = semanticChanges[semanticChanges.length - 1]) === null || _k === void 0 ? void 0 : _k.short;
 	    const nextTag = 'v' + nextVersion;
-	    const releaseDiffRef = `## [${nextVersion}](${repoPublicUrl}/compare/${(_l = lastTag !== null && lastTag !== void 0 ? lastTag : oldestCommitHash) !== null && _l !== void 0 ? _l : GIT_EMPTY_TREE_HASH}...${nextTag}) (${new Date().toISOString().slice(0, 10)})`;
+	    const releaseDiffRef = lastTag ? `## [${nextVersion}](${repoPublicUrl}/compare/${lastTag}...${nextTag}) (${new Date().toISOString().slice(0, 10)})` : `## [${nextVersion}](${repoPublicUrl}/commits/${nextTag}) (${new Date().toISOString().slice(0, 10)})`;
 	    const releaseDetails = Object.values(semanticChanges
 	        .reduce((acc, { group, change, short, hash }) => {
 	        const { commits } = acc[group] || (acc[group] = { commits: [], group });
@@ -42674,7 +42672,7 @@ function requireDist () {
 	    const releaseNotes = releaseDiffRef + '\n' + releaseDetails + '\n';
 	    console.log('releaseNotes=', releaseNotes);
 	    // Validate packages
-	    for (const pkg of (_m = config.packages) !== null && _m !== void 0 ? _m : []) {
+	    for (const pkg of (_k = config.packages) !== null && _k !== void 0 ? _k : []) {
 	        const pkgPath = node_path_1.default.resolve(pkg.path);
 	        if (!fs.existsSync(node_path_1.default.resolve(pkgPath, "package.json"))) {
 	            console.error(`Package ${pkgPath} does not have a package.json file`);
@@ -42692,27 +42690,27 @@ function requireDist () {
 	    }
 	    rootPkgJson.version = nextVersion;
 	    fs.writeFileSync(rootPackageJsonPath, JSON.stringify(rootPkgJson, null, 2) + '\n');
-	    for (const pkg of (_o = config.packages) !== null && _o !== void 0 ? _o : []) {
+	    for (const pkg of (_l = config.packages) !== null && _l !== void 0 ? _l : []) {
 	        const pkgPath = node_path_1.default.resolve(pkg.path);
 	        const pkgJson = JSON.parse(fs.readFileSync(node_path_1.default.resolve(pkgPath, "package.json"), "utf8"));
 	        pkgJson.version = nextVersion;
 	        fs.writeFileSync(node_path_1.default.resolve(pkgPath, "package.json"), JSON.stringify(pkgJson, null, 2) + '\n');
 	    }
-	    const disableGitWrites = (_r = (_q = (_p = flags.disableGitWrites) !== null && _p !== void 0 ? _p : config.disableGitWrites) !== null && _q !== void 0 ? _q : env.DISABLE_GIT_WRITES) !== null && _r !== void 0 ? _r : false;
+	    const disableGitWrites = (_p = (_o = (_m = flags.disableGitWrites) !== null && _m !== void 0 ? _m : config.disableGitWrites) !== null && _o !== void 0 ? _o : env.DISABLE_GIT_WRITES) !== null && _p !== void 0 ? _p : false;
 	    if (disableGitWrites) {
 	        console.log("Skipping git writes");
 	        return;
 	    }
 	    console.log('Running git commands...');
-	    const gitCommitterName = (_t = (_s = flags.gitCommitterName) !== null && _s !== void 0 ? _s : config.gitCommitterName) !== null && _t !== void 0 ? _t : env.GIT_COMMITTER_NAME;
-	    const gitCommitterEmail = (_v = (_u = flags.gitCommitterEmail) !== null && _u !== void 0 ? _u : config.gitCommitterEmail) !== null && _v !== void 0 ? _v : env.GIT_COMMITTER_EMAIL;
+	    const gitCommitterName = (_r = (_q = flags.gitCommitterName) !== null && _q !== void 0 ? _q : config.gitCommitterName) !== null && _r !== void 0 ? _r : env.GIT_COMMITTER_NAME;
+	    const gitCommitterEmail = (_t = (_s = flags.gitCommitterEmail) !== null && _s !== void 0 ? _s : config.gitCommitterEmail) !== null && _t !== void 0 ? _t : env.GIT_COMMITTER_EMAIL;
 	    if (gitCommitterName) {
 	        await exec(`git config user.name ${gitCommitterName}`);
 	    }
 	    if (gitCommitterEmail) {
 	        await exec(`git config user.email ${gitCommitterEmail}`);
 	    }
-	    const githubAuth = (_y = (_x = (_w = flags.githubToken) !== null && _w !== void 0 ? _w : config.githubToken) !== null && _x !== void 0 ? _x : env.GITHUB_TOKEN) !== null && _y !== void 0 ? _y : env.GH_TOKEN;
+	    const githubAuth = (_w = (_v = (_u = flags.githubToken) !== null && _u !== void 0 ? _u : config.githubToken) !== null && _v !== void 0 ? _v : env.GITHUB_TOKEN) !== null && _w !== void 0 ? _w : env.GH_TOKEN;
 	    console.log('githubAuth=', githubAuth);
 	    if (!githubAuth) {
 	        console.warn("No GitHub token found, not setting remote url");
