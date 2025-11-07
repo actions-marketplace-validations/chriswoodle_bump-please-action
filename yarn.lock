@@ -413,7 +413,7 @@ __metadata:
     "@rollup/plugin-typescript": "npm:^12.1.4"
     "@rollup/rollup-linux-x64-gnu": "npm:*"
     "@types/node": "npm:^22.0.0"
-    bump-please-core: "npm:^1.3.5"
+    bump-please-core: "npm:^1.4.0"
     rollup: "npm:^4.46.3"
     tslib: "npm:^2.8.1"
     typescript: "npm:^5.9.2"
@@ -423,13 +423,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"bump-please-core@npm:^1.3.5":
-  version: 1.3.5
-  resolution: "bump-please-core@npm:1.3.5"
+"bump-please-core@npm:^1.4.0":
+  version: 1.4.0
+  resolution: "bump-please-core@npm:1.4.0"
   dependencies:
     envalid: "npm:^8.1.0"
     zod: "npm:^4.0.17"
-  checksum: 10c0/f63f23326f075d7326703c3bc15b00a7e9270eb3ae462d7d7df0142f5b955ed0827c08582c018333060f9a1af63026d568f7295de25070bf88d1022a6ba00d7e
+  checksum: 10c0/16bb36c2578ef46052cb3f6939c0bf6c8b8d9b38e32a46b7cebabd6ebe40b0d9cf8200f9ee28f1dc44a37732ec3955a5089bd592b87baf1be08c6811b232fa54
   languageName: node
   linkType: hard
 
