@@ -42553,10 +42553,12 @@ function requireDist () {
 	    gitCommitterEmail: zod_1.z.string().optional(),
 	    packages: zod_1.z.array(zod_1.z.object({
 	        path: zod_1.z.string(),
+	        jsonFileName: zod_1.z.string().optional(),
+	        jsonPropertyPath: zod_1.z.string().optional(),
 	    })).optional(),
 	});
 	async function bump(flags) {
-	    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w;
+	    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z;
 	    const env = (0, envalid_1.cleanEnv)(process.env, {
 	        DRY_RUN: (0, envalid_1.bool)({ desc: "Dry run", default: undefined }),
 	        CONFIG_FILE: (0, envalid_1.str)({ desc: "Path to the config file to use", default: undefined }),
@@ -42672,17 +42674,26 @@ function requireDist () {
 	    const releaseNotes = releaseDiffRef + '\n' + releaseDetails + '\n';
 	    console.log('releaseNotes=', releaseNotes);
 	    // Validate packages
+	    const validationErrors = [];
 	    for (const pkg of (_k = config.packages) !== null && _k !== void 0 ? _k : []) {
 	        const pkgPath = node_path_1.default.resolve(pkg.path);
-	        if (!fs.existsSync(node_path_1.default.resolve(pkgPath, "package.json"))) {
-	            console.error(`Package ${pkgPath} does not have a package.json file`);
+	        const jsonFileName = (_l = pkg.jsonFileName) !== null && _l !== void 0 ? _l : "package.json";
+	        const jsonFilePath = node_path_1.default.resolve(pkgPath, jsonFileName);
+	        if (!fs.existsSync(jsonFilePath)) {
+	            const message = `Package ${pkgPath} does not have a ${jsonFileName} file`;
+	            console.error(message);
+	            validationErrors.push(message);
 	            continue;
 	        }
 	        const pkgJson = JSON.parse(fs.readFileSync(node_path_1.default.resolve(pkgPath, "package.json"), "utf8"));
 	        if (!pkgJson.version) {
-	            console.error(`Package ${pkgPath} does not have a version`);
+	            validationErrors.push(`Package ${pkgPath} does not have a version`);
 	            continue;
 	        }
+	    }
+	    if (validationErrors.length > 0) {
+	        console.error('Validation errors:', validationErrors.join('\n'));
+	        throw new Error('Validation errors');
 	    }
 	    if (dryRun) {
 	        console.log('Dry run - no changes made.');
@@ -42690,27 +42701,40 @@ function requireDist () {
 	    }
 	    rootPkgJson.version = nextVersion;
 	    fs.writeFileSync(rootPackageJsonPath, JSON.stringify(rootPkgJson, null, 2) + '\n');
-	    for (const pkg of (_l = config.packages) !== null && _l !== void 0 ? _l : []) {
+	    for (const pkg of (_m = config.packages) !== null && _m !== void 0 ? _m : []) {
 	        const pkgPath = node_path_1.default.resolve(pkg.path);
-	        const pkgJson = JSON.parse(fs.readFileSync(node_path_1.default.resolve(pkgPath, "package.json"), "utf8"));
-	        pkgJson.version = nextVersion;
-	        fs.writeFileSync(node_path_1.default.resolve(pkgPath, "package.json"), JSON.stringify(pkgJson, null, 2) + '\n');
+	        const jsonFileName = (_o = pkg.jsonFileName) !== null && _o !== void 0 ? _o : "package.json";
+	        const jsonFilePath = node_path_1.default.resolve(pkgPath, jsonFileName);
+	        const jsonContents = JSON.parse(fs.readFileSync(jsonFilePath, "utf8"));
+	        const jsonPropertyPath = (_p = pkg.jsonPropertyPath) !== null && _p !== void 0 ? _p : "version";
+	        const jsonProperty = jsonPropertyPath.split('.').reduce((obj, key) => obj === null || obj === void 0 ? void 0 : obj[key], jsonContents);
+	        if (!jsonProperty) {
+	            const message = `Package ${pkgPath} does not have a ${jsonPropertyPath} property`;
+	            console.error(message);
+	            throw new Error(message);
+	        }
+	        // Set nested property using dot notation
+	        const pathParts = jsonPropertyPath.split('.');
+	        const lastKey = pathParts.pop();
+	        const parentObject = pathParts.reduce((obj, key) => obj[key], jsonContents);
+	        parentObject[lastKey] = nextVersion;
+	        fs.writeFileSync(jsonFilePath, JSON.stringify(jsonContents, null, 2) + '\n');
 	    }
-	    const disableGitWrites = (_p = (_o = (_m = flags.disableGitWrites) !== null && _m !== void 0 ? _m : config.disableGitWrites) !== null && _o !== void 0 ? _o : env.DISABLE_GIT_WRITES) !== null && _p !== void 0 ? _p : false;
+	    const disableGitWrites = (_s = (_r = (_q = flags.disableGitWrites) !== null && _q !== void 0 ? _q : config.disableGitWrites) !== null && _r !== void 0 ? _r : env.DISABLE_GIT_WRITES) !== null && _s !== void 0 ? _s : false;
 	    if (disableGitWrites) {
 	        console.log("Skipping git writes");
 	        return;
 	    }
 	    console.log('Running git commands...');
-	    const gitCommitterName = (_r = (_q = flags.gitCommitterName) !== null && _q !== void 0 ? _q : config.gitCommitterName) !== null && _r !== void 0 ? _r : env.GIT_COMMITTER_NAME;
-	    const gitCommitterEmail = (_t = (_s = flags.gitCommitterEmail) !== null && _s !== void 0 ? _s : config.gitCommitterEmail) !== null && _t !== void 0 ? _t : env.GIT_COMMITTER_EMAIL;
+	    const gitCommitterName = (_u = (_t = flags.gitCommitterName) !== null && _t !== void 0 ? _t : config.gitCommitterName) !== null && _u !== void 0 ? _u : env.GIT_COMMITTER_NAME;
+	    const gitCommitterEmail = (_w = (_v = flags.gitCommitterEmail) !== null && _v !== void 0 ? _v : config.gitCommitterEmail) !== null && _w !== void 0 ? _w : env.GIT_COMMITTER_EMAIL;
 	    if (gitCommitterName) {
 	        await exec(`git config user.name ${gitCommitterName}`);
 	    }
 	    if (gitCommitterEmail) {
 	        await exec(`git config user.email ${gitCommitterEmail}`);
 	    }
-	    const githubAuth = (_w = (_v = (_u = flags.githubToken) !== null && _u !== void 0 ? _u : config.githubToken) !== null && _v !== void 0 ? _v : env.GITHUB_TOKEN) !== null && _w !== void 0 ? _w : env.GH_TOKEN;
+	    const githubAuth = (_z = (_y = (_x = flags.githubToken) !== null && _x !== void 0 ? _x : config.githubToken) !== null && _y !== void 0 ? _y : env.GITHUB_TOKEN) !== null && _z !== void 0 ? _z : env.GH_TOKEN;
 	    console.log('githubAuth=', githubAuth);
 	    if (!githubAuth) {
 	        console.warn("No GitHub token found, not setting remote url");
