@@ -1,4 +1,8 @@
-# bump-please-action
+# Bump Please Github Action 🤜💥🤛
+
+Use [Bump Please](https://github.com/chriswoodle/bump-please) to automatically bump package.json versions on git commits or releases.
+
+For configuration, see [Bump Please](https://github.com/chriswoodle/bump-please)
 
 
 # Usage
@@ -19,12 +23,15 @@ with:
 3. Configure Bump Please.
 ```yaml
 - name: 🤜 Bump Please
-  uses: chriswoodle/bump-please-action@v1.0.0
+  uses: chriswoodle/bump-please-action@v1.1.1
   with:
     github-token: ${{ secrets.GITHUB_TOKEN }}
 ```
 
 ## Example
+
+Version bump on every git commit:
+
 ```yaml
 name: Version Bump
 
@@ -58,7 +65,7 @@ jobs:
       run: npm run build
                 
     - name: 🤜 Bump Please
-      uses: chriswoodle/bump-please-action@v1.0.0
+      uses: chriswoodle/bump-please-action@v1.1.1
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
 ```
