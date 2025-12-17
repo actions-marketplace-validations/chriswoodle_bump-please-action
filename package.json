@@ -1,6 +1,6 @@
 {
   "name": "bump-please-action",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Bump the version of a package.json files using bump-please",
   "license": "MIT",
   "type": "module",
@@ -21,7 +21,7 @@
   "packageManager": "yarn@4.9.2",
   "dependencies": {
     "@actions/core": "^1.11.1",
-    "bump-please-core": "^1.4.0"
+    "bump-please-core": "^1.4.1"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^28.0.6",

@@ -34,6 +34,6 @@ jobs:
         run: yarn bundle
 
       - name: 🤜 Bump Please
-        uses: chriswoodle/bump-please-action@v1.0.2
+        uses: chriswoodle/bump-please-action@v1.1.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}     
