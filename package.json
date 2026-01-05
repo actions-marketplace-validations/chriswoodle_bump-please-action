@@ -1,6 +1,6 @@
 {
   "name": "bump-please-action",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "Bump the version of a package.json files using bump-please",
   "license": "MIT",
   "type": "module",
