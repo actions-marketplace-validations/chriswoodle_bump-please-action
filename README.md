@@ -13,17 +13,20 @@ permissions:
   contents: write
 ```
 
-2. Set fetch-depth 0. This allows the action to access full git history
+2. Set `fetch-depth 0` and `fetch-tags: true`. This allows the action to access all git tags.
 ```yaml
-uses: actions/checkout@v4
+uses: actions/checkout@v6
 with:
   fetch-depth: 0
+  fetch-tags: true
 ```
+
+> This may be slow for large repositories. See https://github.com/actions/checkout/issues/1471
 
 3. Configure Bump Please.
 ```yaml
 - name: 🤜 Bump Please
-  uses: chriswoodle/bump-please-action@v1.1.1
+  uses: chriswoodle/bump-please-action@v1.1.2
   with:
     github-token: ${{ secrets.GITHUB_TOKEN }}
 ```
@@ -49,14 +52,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: 🏗 Setup repo
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         fetch-depth: 0
+        fetch-tags: true
 
     - name: 🏗 Setup Node
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v6
       with:
-        node-version: 22.x
+        node-version: 24
         
     - name: 📦 Install Project dependencies
       run: npm install
@@ -65,7 +69,7 @@ jobs:
       run: npm run build
                 
     - name: 🤜 Bump Please
-      uses: chriswoodle/bump-please-action@v1.1.1
+      uses: chriswoodle/bump-please-action@v1.1.2
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
 ```
