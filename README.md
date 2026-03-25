@@ -1,231 +1,87 @@
-# Bump Please 🤜💥🤛
+# Bump Please GitHub Action 🤜💥🤛
 
-A CLI tool and GitHub Action that automatically bumps versions in `package.json` and other JSON files based on conventional commits. Supports monorepos.
+Use [Bump Please](https://github.com/chriswoodle/bump-please) to automatically bump `package.json` versions based on conventional commits. Supports monorepos.
 
-## GitHub Action
-
-Bump Please is also available as a GitHub Action. See [bump-please-action](https://github.com/chriswoodle/bump-please-action) for usage and documentation.
-
-## CLI Installation
-
-```bash
-npm install -g bump-please
-# or
-yarn global add bump-please
-```
+For full configuration options, see [Bump Please](https://github.com/chriswoodle/bump-please).
 
 ## Usage
 
-Bump Please automatically analyzes your git commits since the last tag and determines the appropriate version bump based loosely on [Conventional Commits](https://www.conventionalcommits.org/) specification.
-
-### Basic Usage
-
-```bash
-bump-please bump
+1. Set write permissions so the action can push commits and tags back to the repo.
+```yaml
+permissions:
+  contents: write
 ```
 
-The tool will:
-1. Analyze commits since the last git tag
-2. Determine the version bump type (patch, minor, or major)
-3. Update version numbers in your `package.json` files
-4. Create a git tag with the new version
-5. Commit and push the changes
-
-> By default, the root package.json will allways be modified. Add additional configuration to also bump the version of monorepo packages. 
-> All package.json files will get the same version.
-
-### Conventional Commits & Version Bumps
-
-Bump Please uses conventional commit messages to determine the version bump type:
-
-#### Patch Version (1.0.0 → 1.0.1)
-
-Patch versions are used for bug fixes and non-breaking changes. Commits with these prefixes trigger a **patch** bump:
-
-- `fix:` - Bug fixes
-- `perf:` - Performance improvements
-- `refactor:` - Code refactoring
-- `docs:` - Documentation changes
-
-**Examples:**
-```bash
-git commit -m "fix: resolve memory leak in cache"
-git commit -m "perf: optimize database queries"
-git commit -m "refactor: simplify authentication logic"
-git commit -m "docs: update API documentation"
+2. Set `fetch-depth: 0` and `fetch-tags: true` so the action can access all git tags.
+```yaml
+- uses: actions/checkout@v6
+  with:
+    fetch-depth: 0
+    fetch-tags: true
 ```
 
-#### Minor Version (1.0.0 → 1.1.0)
+> This may be slow for large repositories. See https://github.com/actions/checkout/issues/1471
 
-Minor versions are used for new features that don't break existing functionality. Commits with this prefix trigger a **minor** bump:
-
-- `feat:` - New features
-
-**Examples:**
-```bash
-git commit -m "feat: add user authentication"
-git commit -m "feat(api): implement rate limiting"
-git commit -m "feat: add dark mode support"
+3. Add the Bump Please step.
+```yaml
+- name: 🤜 Bump Please
+  uses: chriswoodle/bump-please-action@<commit-sha> # v1
+  with:
+    github-token: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-#### Major Version (1.0.0 → 2.0.0)
+> **Security:** Pin actions to a full commit SHA instead of a mutable tag like `@v1`. Tags can be moved to point to different code, but commit SHAs are immutable. Find the SHA for a release tag with:
+> ```bash
+> git ls-remote --tags https://github.com/chriswoodle/bump-please-action.git "v*"
+> ```
 
-Major versions are used for breaking changes. Commits that include breaking change indicators trigger a **major** bump:
+## Full Example
 
-- `BREAKING CHANGE:` or `BREAKING CHANGES:` in the commit body
+```yaml
+name: Version Bump
 
-**Examples:**
-```bash
-git commit -m "feat: redesign API" -m "BREAKING CHANGE: API endpoints have changed"
-git commit -m "refactor: update data model
+on:
+  push:
+    branches: [ main ]
 
-BREAKING CHANGES: Database schema has been restructured"
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - name: 🏗 Setup repo
+      uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
+        fetch-tags: true
+
+    - name: 🏗 Setup Node
+      uses: actions/setup-node@v6
+      with:
+        node-version: 24
+
+    - name: 📦 Install dependencies
+      run: npm install
+
+    - name: 🏗️ Build
+      run: npm run build
+
+    - name: 🤜 Bump Please
+      uses: chriswoodle/bump-please-action@<commit-sha> # v1
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-### Version Bump Priority
+## Inputs
 
-When multiple commit types are present, Bump Please uses the highest priority:
-1. **Major** (breaking changes) - highest priority
-2. **Minor** (new features)
-3. **Patch** (fixes/improvements) - lowest priority
-
-For example, if you have both `feat:` and `fix:` commits, the version will be bumped as **minor**.
-
-### Configuration
-
-Create a `bump-please-config.json` file in your project root:
-
-```json
-{
-  "packages": [
-    {
-      "path": "./packages/package-a"
-    },
-    {
-      "path": "./packages/package-b"
-    }
-  ]
-}
-```
-
-#### Configuration Options
-
-- `packages` (optional): Array of package paths to update versions for (monorepo support)
-- `dryRun` (optional): If `true`, shows what would be changed without making changes
-- `disableGitWrites` (optional): If `true`, skips git commits, tags, and pushes
-- `gitBranch` (optional): Branch to push to (defaults to current branch)
-- `gitCommitterName` (optional): Name for git commits
-- `gitCommitterEmail` (optional): Email for git commits
-- `githubToken` (optional): GitHub token for authentication (can also use `GITHUB_TOKEN` env var)
-
-### Alternative Output Files
-
-You can specify arbitrary JSON files to update instead of (or in addition to) `package.json`. This is useful for projects like Expo apps that store version information in `app.json`.
-
-**Example: Bumping Expo app.json version**
-
-For an Expo app, the version is typically stored at `expo.version` in `app.json`. Configure it like this:
-
-```json
-{
-  "packages": [
-    {
-      "path": ".",
-      "jsonFileName": "app.json",
-      "jsonPropertyPath": "expo.version"
-    }
-  ]
-}
-```
-
-This will update the version in your `app.json` file:
-```json
-{
-  "expo": {
-    "name": "MyApp",
-    "version": "1.2.3"
-  }
-}
-```
-
-You can combine this with regular `package.json` updates by including multiple package entries in your configuration.
-
-### Command Line Options
-
-```bash
-bump-please bump [options]
-```
-
-**Options:**
-- `--dry-run` - Preview changes without applying them
-- `--config-file <path>` - Path to config file (default: `bump-please-config.json`)
-- `--disable-git-writes` - Skip git operations
-- `--github-token <token>` - GitHub token for authentication
-- `--gh-token <token>` - Alternative GitHub token flag
-- `--git-branch <branch>` - Branch to push to
-- `--git-committer-name <name>` - Git committer name
-- `--git-committer-email <email>` - Git committer email
-- `--root-package-json <path>` - Path to root package.json (default: `./package.json`)
-
-### Environment Variables
-
-You can also configure the tool using environment variables:
-
-- `DRY_RUN` - Enable dry run mode
-- `CONFIG_FILE` - Path to config file
-- `DISABLE_GIT_WRITES` - Disable git writes
-- `GITHUB_TOKEN` or `GH_TOKEN` - GitHub token
-- `GIT_BRANCH` - Git branch
-- `GIT_COMMITTER_NAME` - Git committer name
-- `GIT_COMMITTER_EMAIL` - Git committer email
-- `ROOT_PACKAGE_JSON` - Path to root package.json
-
-### Examples
-
-#### Dry Run
-
-Preview what changes would be made:
-
-```bash
-bump-please bump --dry-run
-```
-
-#### Monorepo Setup
-
-For a monorepo with multiple packages:
-
-```json
-{
-  "packages": [
-    { "path": "./packages/core" },
-    { "path": "./packages/ui" },
-    { "path": "./packages/utils" }
-  ]
-}
-```
-
-### How It Works
-
-1. **Tag Detection**: Finds the last semantic version tag (e.g., `v1.2.3`)
-2. **Commit Analysis**: Analyzes all commits since the last tag
-3. **Version Calculation**: Determines the next version based on conventional commits
-4. **Package Updates**: Updates version in root `package.json` and configured packages
-5. **Git Operations**: Creates a commit, tags it, and pushes to the remote repository
-
-If no previous tag exists, the tool uses the version from your root `package.json` as the starting point.
-
-## Development
-```
-yarn
-yarn dlx @yarnpkg/sdks vscode
-```
-
-## Building and running
-```
-yarn build
-./bump-please/dist/cli.js bump
-```
-
-### Credits:
-
-* https://github.com/semrel-extra/zx-semrel
+| Input | Description | Required |
+|---|---|---|
+| `github-token` | GitHub token for git operations | No |
+| `dry-run` | Preview changes without applying them | No |
+| `config-file` | Path to bump-please config file | No |
+| `disable-git-writes` | Skip git commits, tags, and pushes | No |
+| `git-branch` | Branch to push to | No |
+| `git-committer-name` | Name for git commits (default: `github-actions[bot]`) | No |
+| `git-committer-email` | Email for git commits | No |
+| `root-package-json` | Path to root package.json | No |

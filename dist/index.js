@@ -44054,8 +44054,10 @@ function parseBooleanInput(input) {
     const lowerInput = input.toLowerCase();
     return lowerInput === 'true' || lowerInput === '1' || lowerInput === 'yes' || lowerInput === 'on';
 }
+const ACTION_VERSION = '1.4.12';
 async function run() {
     try {
+        info(`bump-please-action v${ACTION_VERSION}`);
         const flags = {
             ...(getInput("dry-run") ? { dryRun: parseBooleanInput(getInput("dry-run")) } : {}),
             ...(getInput("config-file") ? { configFile: getInput("config-file") } : {}),
