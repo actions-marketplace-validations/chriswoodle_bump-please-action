@@ -43907,9 +43907,32 @@ function requireDist () {
 	    console.log('configFile=', configFile);
 	    const configFilePath = node_path_1.default.resolve(configFile);
 	    console.log('configFilePath=', configFilePath);
-	    const config = BumpPleaseConfig.parse(JSON.parse(fs.readFileSync(configFilePath, "utf8")));
+	    const rootPackageJsonPath = node_path_1.default.resolve((_d = (_c = flags.rootPackageJson) !== null && _c !== void 0 ? _c : env.ROOT_PACKAGE_JSON) !== null && _d !== void 0 ? _d : './package.json');
+	    let rawConfig;
+	    let configMissing = false;
+	    try {
+	        rawConfig = JSON.parse(fs.readFileSync(configFilePath, "utf8"));
+	        console.log(`Loaded config from ${configFilePath}`);
+	    }
+	    catch (error) {
+	        if ((error === null || error === void 0 ? void 0 : error.code) !== 'ENOENT')
+	            throw error;
+	        configMissing = true;
+	    }
+	    const rootPkgJson = JSON.parse(fs.readFileSync(rootPackageJsonPath, 'utf8'));
+	    if (configMissing) {
+	        if (rootPkgJson.bumpPleaseConfig) {
+	            console.log(`Loaded config from "bumpPleaseConfig" key in ${rootPackageJsonPath}`);
+	            rawConfig = rootPkgJson.bumpPleaseConfig;
+	        }
+	        else {
+	            console.log(`No config found (looked for ${configFilePath} and "bumpPleaseConfig" key in ${rootPackageJsonPath}); using empty config`);
+	            rawConfig = {};
+	        }
+	    }
+	    const config = BumpPleaseConfig.parse(rawConfig);
 	    console.log('config=', config);
-	    const dryRun = (_d = (_c = flags.dryRun) !== null && _c !== void 0 ? _c : config.dryRun) !== null && _d !== void 0 ? _d : false;
+	    const dryRun = (_f = (_e = flags.dryRun) !== null && _e !== void 0 ? _e : config.dryRun) !== null && _f !== void 0 ? _f : false;
 	    if (dryRun) {
 	        console.log("Dry run");
 	    }
@@ -43918,7 +43941,7 @@ function requireDist () {
 	        console.error(error);
 	        throw error;
 	    })).stdout.trim();
-	    const branch = (_g = (_f = (_e = flags.gitBranch) !== null && _e !== void 0 ? _e : config.gitBranch) !== null && _f !== void 0 ? _f : (await execFile('git', ['branch', '--show-current'])).stdout.trim()) !== null && _g !== void 0 ? _g : 'main';
+	    const branch = (_j = (_h = (_g = flags.gitBranch) !== null && _g !== void 0 ? _g : config.gitBranch) !== null && _h !== void 0 ? _h : (await execFile('git', ['branch', '--show-current'])).stdout.trim()) !== null && _j !== void 0 ? _j : 'main';
 	    const [, , repoHost, repoName] = originUrl.replace(':', '/').replace(/\.git/, '').match(/.+(@|\/\/)([^/]+)\/(.+)$/);
 	    const repoPublicUrl = `https://${repoHost}/${repoName}`;
 	    // Commits analysis
@@ -43929,8 +43952,6 @@ function requireDist () {
 	        { group: 'Fixes & improvements', releaseType: 'patch', prefixes: ['fix', 'perf', 'refactor', 'docs'] },
 	        { group: 'BREAKING CHANGES', releaseType: 'major', keywords: ['BREAKING CHANGE', 'BREAKING CHANGES'] },
 	    ];
-	    const rootPackageJsonPath = node_path_1.default.resolve((_j = (_h = flags.rootPackageJson) !== null && _h !== void 0 ? _h : env.ROOT_PACKAGE_JSON) !== null && _j !== void 0 ? _j : './package.json');
-	    const rootPkgJson = JSON.parse(fs.readFileSync(rootPackageJsonPath, 'utf8'));
 	    const tags = (await execFile('git', ['tag', '-l', '--sort=-v:refname'])).stdout.split('\n').map(tag => tag.trim());
 	    console.log('tags=', tags);
 	    const lastTag = tags.find(tag => semanticTagPattern.test(tag));
@@ -44101,7 +44122,7 @@ function parseBooleanInput(input) {
     const lowerInput = input.toLowerCase();
     return lowerInput === 'true' || lowerInput === '1' || lowerInput === 'yes' || lowerInput === 'on';
 }
-const ACTION_VERSION = '1.5.3';
+const ACTION_VERSION = '1.6.0';
 async function run() {
     try {
         info(`bump-please-action v${ACTION_VERSION}`);
